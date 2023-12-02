@@ -1,6 +1,6 @@
 # C++-Template-Discord-Spotify-Tracker
 
-This code is very complex and requires extensive set up before running. The code I've created is merely the template. The purpose is so that when you run it, the user you want to track their spotify activity for 1 hour, the tracks they've listened to will be saved in a list on a spreadsheet file on your desktop. The code will do this by tracking their sptofy activity that shows up on discord. For security purposes you will need to set up the bot individually for the user you want to track every time before running
+This code is very complex and requires extensive setup before running. The code I've created is merely the template. The purpose is so that when you run it, the user you want to track their Spotify activity for 1 hour, the tracks they've listened to will be saved in a list on a text file on your desktop. The code will do this by tracking their Spotify activity that shows up on Discord. For security purposes you will need to set up the bot individually for the user you want to track every time before running
 
 Step 1: Set Up a Discord Bot and Get Token
 Go to the Discord Developer Portal and create a new application.
