@@ -4,6 +4,8 @@
 #include <cpprest/json.h>
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <thread>
 
 using namespace utility;
 using namespace web;
@@ -42,34 +44,52 @@ int main() {
     http_request activity_request(methods::GET);
     activity_request.headers().set_authorization(U("Bot ") + botToken);
 
-    // Send the request to get user activity
-    auto activity_response = discord_api.request(activity_request).get();
-    web::json::value activity_json = activity_response.extract_json().get();
+    // Set the tracking duration to 1 hour (in seconds)
+    const int tracking_duration = 3600;
 
-    // Parse and display the user's Spotify activity
-    if (activity_json.has_field(U("activities"))) {
-        auto activities = activity_json[U("activities")].as_array();
-        for (const auto& activity : activities) {
-            utility::string_t activity_type = activity[U("type")].as_string();
-            if (activity_type == U("LISTENING") && activity[U("name")].as_string() == U("Spotify")) {
-                // Handle Spotify activity, e.g., get the track name, artist, etc.
-                utility::string_t track_name = activity[U("details")].as_string();
-                utility::string_t artist_name = activity[U("state")].as_string();
+    // Get the current time
+    auto start_time = std::chrono::steady_clock::now();
 
-                // Print to console
-                std::wcout << L"Currently listening to Spotify: " << track_name << L" by " << artist_name << std::endl;
+    while (true) {
+        // Send the request to get user activity
+        auto activity_response = discord_api.request(activity_request).get();
+        web::json::value activity_json = activity_response.extract_json().get();
 
-                // Save to a text file on the desktop
-                std::wofstream outfile("C:\\Users\\YourUsername\\Desktop\\spotify_activity.txt", std::ios::app);
-                if (outfile.is_open()) {
-                    outfile << L"Track: " << track_name << L", Artist: " << artist_name << std::endl;
-                    outfile.close();
-                    std::wcout << L"Results saved to desktop: spotify_activity.txt" << std::endl;
-                } else {
-                    std::wcerr << L"Unable to open file for writing." << std::endl;
+        // Parse and display the user's Spotify activity
+        if (activity_json.has_field(U("activities"))) {
+            auto activities = activity_json[U("activities")].as_array();
+            for (const auto& activity : activities) {
+                utility::string_t activity_type = activity[U("type")].as_string();
+                if (activity_type == U("LISTENING") && activity[U("name")].as_string() == U("Spotify")) {
+                    // Handle Spotify activity, e.g., get the track name, artist, etc.
+                    utility::string_t track_name = activity[U("details")].as_string();
+                    utility::string_t artist_name = activity[U("state")].as_string();
+
+                    // Print to console
+                    std::wcout << L"Currently listening to Spotify: " << track_name << L" by " << artist_name << std::endl;
+
+                    // Save to a text file on the desktop
+                    std::wofstream outfile("C:\\Users\\YourUsername\\Desktop\\spotify_activity.txt", std::ios::app);
+                    if (outfile.is_open()) {
+                        outfile << L"Track: " << track_name << L", Artist: " << artist_name << std::endl;
+                        outfile.close();
+                        std::wcout << L"Results saved to desktop: spotify_activity.txt" << std::endl;
+                    } else {
+                        std::wcerr << L"Unable to open file for writing." << std::endl;
+                    }
                 }
             }
         }
+
+        // Check if the tracking duration has elapsed
+        auto current_time = std::chrono::steady_clock::now();
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(current_time - start_time).count();
+        if (elapsed_time >= tracking_duration) {
+            break; // Stop tracking after 1 hour
+        }
+
+        // Wait for a short duration before making the next request (e.g., 60 seconds)
+        std::this_thread::sleep_for(std::chrono::seconds(60));
     }
 
     return 0;
